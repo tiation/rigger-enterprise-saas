@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { addJobMatchingJob, addNotificationJob, addPaymentJob, addComplianceJob } from '../queues';
 import { logger } from '../utils/logger';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Trigger job matching for a specific job
-router.post('/jobs/:jobId/match', async (req, res) => {
+router.post('/jobs/:jobId/match', async (req: Request, res: Response) => {
   try {
     const { jobId } = req.params;
     const job = await addJobMatchingJob(jobId);
@@ -27,7 +27,7 @@ router.post('/jobs/:jobId/match', async (req, res) => {
 });
 
 // Send notification
-router.post('/notifications', async (req, res) => {
+router.post('/notifications', async (req: Request, res: Response) => {
   try {
     const { type, recipient, data } = req.body;
     
@@ -57,7 +57,7 @@ router.post('/notifications', async (req, res) => {
 });
 
 // Process payment
-router.post('/payments/:subscriptionId/process', async (req, res) => {
+router.post('/payments/:subscriptionId/process', async (req: Request, res: Response) => {
   try {
     const { subscriptionId } = req.params;
     const job = await addPaymentJob(subscriptionId);
@@ -79,7 +79,7 @@ router.post('/payments/:subscriptionId/process', async (req, res) => {
 });
 
 // Check compliance
-router.post('/compliance/:workerId/check', async (req, res) => {
+router.post('/compliance/:workerId/check', async (req: Request, res: Response) => {
   try {
     const { workerId } = req.params;
     const { type = 'certification' } = req.body;
@@ -103,7 +103,7 @@ router.post('/compliance/:workerId/check', async (req, res) => {
 });
 
 // Get automation statistics
-router.get('/stats', async (req, res) => {
+router.get('/stats', async (req: Request, res: Response) => {
   try {
     // This would typically fetch from database
     const stats = {

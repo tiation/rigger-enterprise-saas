@@ -1,10 +1,10 @@
 import Queue from 'bull';
 import Redis from 'redis';
 import { logger } from '../utils/logger';
-import { processJobMatching } from './processors/jobMatching';
-import { processNotifications } from './processors/notifications';
-import { processPayments } from './processors/payments';
-import { processCompliance } from './processors/compliance';
+import { processJobMatching } from '../processors/jobMatching';
+import { processNotifications } from '../processors/notifications';
+import { processPayments } from '../processors/payments';
+import { processCompliance } from '../processors/compliance';
 
 // Redis connection
 const redisConfig = {
@@ -76,7 +76,7 @@ export async function addJobMatchingJob(jobId: string, options = {}) {
   return jobMatchingQueue.add('match-workers-to-job', { jobId }, {
     delay: 5 * 60 * 1000, // 5 minute delay
     attempts: 3,
-    backoff: 'exponential',
+    backoff: { type: 'exponential', delay: 1000 },
     removeOnComplete: 10,
     removeOnFail: 5,
     ...options
@@ -86,7 +86,7 @@ export async function addJobMatchingJob(jobId: string, options = {}) {
 export async function addNotificationJob(type: string, recipient: string, data: any, options = {}) {
   return notificationQueue.add('send-notification', { type, recipient, data }, {
     attempts: 5,
-    backoff: 'exponential',
+    backoff: { type: 'exponential', delay: 1000 },
     removeOnComplete: 50,
     removeOnFail: 10,
     ...options
@@ -96,7 +96,7 @@ export async function addNotificationJob(type: string, recipient: string, data: 
 export async function addPaymentJob(subscriptionId: string, options = {}) {
   return paymentQueue.add('process-payment', { subscriptionId }, {
     attempts: 3,
-    backoff: 'fixed',
+    backoff: { type: 'fixed', delay: 5000 },
     removeOnComplete: 20,
     removeOnFail: 10,
     ...options

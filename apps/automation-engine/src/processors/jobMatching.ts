@@ -229,3 +229,4 @@ function generateMatchReasons(job: any, worker: any, score: number): any {
     }))
   };
 }
+

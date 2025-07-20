@@ -2,7 +2,7 @@ import express from 'express';
 import { PrismaClient } from '@rigger/database';
 import { jobMatchingQueue, notificationQueue, paymentQueue, complianceQueue } from '../queues';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 const prisma = new PrismaClient();
 
 router.get('/', async (req, res) => {

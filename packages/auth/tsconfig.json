@@ -24,6 +24,6 @@
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node"
   },
-  "include": ["index.ts", "guards.ts"],
-  "exclude": ["node_modules", "dist", "middleware.ts"]
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "dist", "next-middleware.ts"]
 }

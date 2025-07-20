@@ -135,3 +135,4 @@ export class AuthService {
 }
 
 export * from './guards';
+export * from './middleware';
