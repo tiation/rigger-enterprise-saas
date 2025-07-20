@@ -1,0 +1,8 @@
+packages:
+  - 'apps/*'
+  - 'apps/rigger-connect/*'
+  - 'apps/rigger-hub/*'
+  - 'apps/automation-engine'
+  - 'apps/api-gateway'
+  - 'packages/*'
+  - 'services/*'

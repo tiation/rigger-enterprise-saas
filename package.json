@@ -3,14 +3,6 @@
   "version": "1.0.0",
   "description": "Enterprise-grade construction workforce management SaaS platform",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "apps/rigger-connect/*",
-    "apps/rigger-hub/*", 
-    "apps/automation-engine/*",
-    "packages/*",
-    "services/*"
-  ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
