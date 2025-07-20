@@ -1,10 +1,10 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { PrismaClient } from '@rigger/database';
-import { expressAuth, expressRequireRole, expressRequireCompanyAccess } from '@rigger/auth/middleware';
+import { expressAuth, expressRequireRole, expressRequireCompanyAccess, AuthenticatedRequest } from '@rigger/auth/middleware';
 import { logger } from '../utils/logger';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 const prisma = new PrismaClient();
 
 // Get all jobs (public endpoint for workers)
@@ -17,7 +17,7 @@ router.get('/', [
   query('type').optional().isIn(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'TEMPORARY']),
   query('minRate').optional().isFloat({ min: 0 }),
   query('maxRate').optional().isFloat({ min: 0 }),
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -124,7 +124,7 @@ router.get('/', [
 });
 
 // Get single job by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: req.params.id },
@@ -192,6 +192,7 @@ router.get('/:id', async (req, res) => {
       success: false,
       error: 'Failed to fetch job'
     });
+    return;
   }
 });
 
@@ -205,7 +206,7 @@ router.post('/', expressRequireRole(['COMPANY_OWNER', 'COMPANY_MANAGER']), [
   body('postcode').trim().isLength({ min: 4, max: 4 }),
   body('payRate').optional().isFloat({ min: 0 }),
   body('skills').isArray({ min: 1 }),
-], async (req: any, res) => {
+], async (req: AuthenticatedRequest, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -318,7 +319,7 @@ router.post('/', expressRequireRole(['COMPANY_OWNER', 'COMPANY_MANAGER']), [
 });
 
 // Publish job (company users only)
-router.post('/:id/publish', expressRequireRole(['COMPANY_OWNER', 'COMPANY_MANAGER']), async (req: any, res) => {
+router.post('/:id/publish', expressRequireRole(['COMPANY_OWNER', 'COMPANY_MANAGER']), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: req.params.id },
@@ -370,6 +371,7 @@ router.post('/:id/publish', expressRequireRole(['COMPANY_OWNER', 'COMPANY_MANAGE
       success: false,
       error: 'Failed to publish job'
     });
+    return;
   }
 });
 
@@ -378,7 +380,7 @@ router.post('/:id/apply', expressAuth, [
   body('coverLetter').optional().trim().isLength({ max: 2000 }),
   body('proposedRate').optional().isFloat({ min: 0 }),
   body('availableFrom').optional().isISO8601(),
-], async (req: any, res) => {
+], async (req: AuthenticatedRequest, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

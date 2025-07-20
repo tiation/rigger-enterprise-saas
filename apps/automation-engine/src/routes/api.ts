@@ -120,6 +120,7 @@ router.get('/stats', async (req: Request, res: Response) => {
       success: true,
       data: stats
     });
+    return;
   } catch (error) {
     logger.error('Failed to get automation stats:', error);
     res.status(500).json({
