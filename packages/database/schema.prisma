@@ -1,0 +1,448 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================
+// CORE USER MANAGEMENT
+// ========================
+
+enum UserRole {
+  ADMIN
+  COMPANY_OWNER
+  COMPANY_MANAGER
+  WORKER
+  SYSTEM
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  phone     String?
+  role      UserRole
+  status    UserStatus @default(PENDING_VERIFICATION)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Profile data
+  firstName String?
+  lastName  String?
+  avatar    String?
+
+  // Authentication
+  passwordHash String?
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+
+  // Relations
+  companies     CompanyUser[]
+  workerProfile WorkerProfile?
+  sessions      UserSession[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_sessions")
+}
+
+// ========================
+// COMPANY MANAGEMENT  
+// ========================
+
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  abn       String   @unique
+  status    CompanyStatus @default(PENDING_VERIFICATION)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company details
+  description String?
+  website     String?
+  logo        String?
+  
+  // Address
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postcode     String?
+  country      String @default("Australia")
+
+  // Relations
+  users        CompanyUser[]
+  jobs         Job[]
+  subscriptions CompanySubscription[]
+  
+  @@map("companies")
+}
+
+enum CompanyUserRole {
+  OWNER
+  ADMIN
+  MANAGER
+  VIEWER
+}
+
+model CompanyUser {
+  id        String   @id @default(cuid())
+  companyId String
+  userId    String
+  role      CompanyUserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId])
+  @@map("company_users")
+}
+
+// ========================
+// WORKER PROFILES
+// ========================
+
+enum WorkerStatus {
+  AVAILABLE
+  BUSY
+  INACTIVE
+  SUSPENDED
+}
+
+model WorkerProfile {
+  id       String @id @default(cuid())
+  userId   String @unique
+  status   WorkerStatus @default(AVAILABLE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Profile details
+  bio          String?
+  yearsExp     Int?
+  hourlyRate   Decimal?
+  
+  // Location
+  city         String?
+  state        String?
+  postcode     String?
+  travelRadius Int? // km
+
+  // Relations
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills         WorkerSkill[]
+  certifications WorkerCertification[]
+  jobApplications JobApplication[]
+  workHistory    WorkHistory[]
+
+  @@map("worker_profiles")
+}
+
+model Skill {
+  id          String @id @default(cuid())
+  name        String @unique
+  category    String
+  description String?
+  createdAt   DateTime @default(now())
+
+  workers WorkerSkill[]
+  jobs    JobSkill[]
+
+  @@map("skills")
+}
+
+model WorkerSkill {
+  id           String @id @default(cuid())
+  workerProfileId String
+  skillId      String
+  proficiency  Int // 1-10 scale
+  yearsExp     Int?
+  createdAt    DateTime @default(now())
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  skill         Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([workerProfileId, skillId])
+  @@map("worker_skills")
+}
+
+enum CertificationStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  PENDING
+}
+
+model Certification {
+  id          String @id @default(cuid())
+  name        String @unique
+  category    String
+  authority   String
+  description String?
+  validityPeriod Int? // months
+  createdAt   DateTime @default(now())
+
+  workers WorkerCertification[]
+
+  @@map("certifications")
+}
+
+model WorkerCertification {
+  id               String @id @default(cuid())
+  workerProfileId  String
+  certificationId  String
+  status          CertificationStatus @default(PENDING)
+  issuedAt        DateTime?
+  expiresAt       DateTime?
+  certificationNumber String?
+  documentUrl     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workerProfile  WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  certification  Certification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+
+  @@unique([workerProfileId, certificationId])
+  @@map("worker_certifications")
+}
+
+// ========================
+// JOB MANAGEMENT
+// ========================
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+}
+
+model Job {
+  id        String   @id @default(cuid())
+  companyId String
+  title     String
+  description String
+  status    JobStatus @default(DRAFT)
+  type      JobType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  publishedAt DateTime?
+  
+  // Job details
+  payRate      Decimal?
+  payType      String? // hourly, daily, project
+  startDate    DateTime?
+  endDate      DateTime?
+  hoursPerWeek Int?
+  
+  // Location
+  city         String
+  state        String
+  postcode     String
+  isRemote     Boolean @default(false)
+  
+  // Application settings
+  maxApplicants Int?
+  applicationDeadline DateTime?
+
+  // Relations
+  company      Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  skills       JobSkill[]
+  applications JobApplication[]
+
+  @@map("jobs")
+}
+
+model JobSkill {
+  id       String @id @default(cuid())
+  jobId    String
+  skillId  String
+  required Boolean @default(true)
+  minExp   Int? // years
+  createdAt DateTime @default(now())
+
+  job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, skillId])
+  @@map("job_skills")
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  INTERVIEWED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+model JobApplication {
+  id              String @id @default(cuid())
+  jobId           String
+  workerProfileId String
+  status          ApplicationStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Application data
+  coverLetter String?
+  proposedRate Decimal?
+  availableFrom DateTime?
+  
+  job           Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, workerProfileId])
+  @@map("job_applications")
+}
+
+model WorkHistory {
+  id              String @id @default(cuid())
+  workerProfileId String
+  jobId           String?
+  companyName     String
+  position        String
+  description     String?
+  startDate       DateTime
+  endDate         DateTime?
+  hourlyRate      Decimal?
+  createdAt       DateTime @default(now())
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+
+  @@map("work_history")
+}
+
+// ========================
+// SUBSCRIPTION & BILLING
+// ========================
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+}
+
+model SubscriptionPlan {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  price       Decimal
+  interval    String // monthly, yearly
+  jobPostLimit Int?
+  features    Json
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+
+  subscriptions CompanySubscription[]
+
+  @@map("subscription_plans")
+}
+
+model CompanySubscription {
+  id           String @id @default(cuid())
+  companyId    String
+  planId       String
+  status       SubscriptionStatus
+  stripeId     String? @unique
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan    SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@map("company_subscriptions")
+}
+
+// ========================
+// AUDIT & COMPLIANCE
+// ========================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  resourceId String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+// ========================
+// AUTOMATION & AI
+// ========================
+
+model JobMatch {
+  id              String @id @default(cuid())
+  jobId           String
+  workerProfileId String
+  score           Decimal
+  reasons         Json
+  createdAt       DateTime @default(now())
+
+  @@unique([jobId, workerProfileId])
+  @@map("job_matches")
+}
+
+model AutomationLog {
+  id        String   @id @default(cuid())
+  type      String
+  status    String
+  data      Json?
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@map("automation_logs")
+}

@@ -1,0 +1,75 @@
+{
+  "name": "rigger-enterprise-saas",
+  "version": "1.0.0",
+  "description": "Enterprise-grade construction workforce management SaaS platform",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "apps/rigger-connect/*",
+    "apps/rigger-hub/*", 
+    "apps/automation-engine/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    
+    "dev:rigger-connect": "turbo run dev --filter=@rigger/connect-*",
+    "dev:rigger-hub": "turbo run dev --filter=@rigger/hub-*",
+    "dev:automation": "turbo run dev --filter=@rigger/automation-*",
+    "dev:services": "turbo run dev --filter=@rigger/service-*",
+    
+    "build:all": "turbo run build",
+    "build:connect": "turbo run build --filter=@rigger/connect-*",
+    "build:hub": "turbo run build --filter=@rigger/hub-*",
+    
+    "deploy:production": "turbo run build && docker-compose -f docker-compose.prod.yml up -d",
+    "deploy:staging": "turbo run build && docker-compose -f docker-compose.staging.yml up -d",
+    
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "keywords": [
+    "construction",
+    "workforce",
+    "saas",
+    "enterprise",
+    "rigger",
+    "monorepo",
+    "automation"
+  ],
+  "author": "Tiation Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tiation/rigger-enterprise-saas.git"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.44.0",
+    "eslint-config-prettier": "^8.8.0",
+    "prettier": "^3.0.0",
+    "turbo": "^1.10.0",
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.6.0"
+}

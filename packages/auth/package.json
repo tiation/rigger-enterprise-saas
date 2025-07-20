@@ -1,0 +1,23 @@
+{
+  "name": "@rigger/auth",
+  "version": "1.0.0",
+  "description": "Shared authentication utilities for RiggerConnect Enterprise",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "@rigger/database": "workspace:*",
+    "@rigger/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/node": "^20.4.2",
+    "typescript": "^5.1.6"
+  }
+}

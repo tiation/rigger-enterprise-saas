@@ -1,0 +1,25 @@
+{
+  "name": "@rigger/database",
+  "version": "1.0.0",
+  "description": "Shared database schema and utilities for RiggerConnect Enterprise",
+  "main": "index.ts",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset --force"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.0",
+    "prisma": "^5.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "typescript": "^5.1.6"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  }
+}
