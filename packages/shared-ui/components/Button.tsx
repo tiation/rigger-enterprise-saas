@@ -3,12 +3,17 @@ import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: React.ReactNode;
   fullWidth?: boolean;
+  children?: React.ReactNode;
+  className?: string;
+  disabled?: boolean;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 const variantStyles = {
@@ -34,7 +39,8 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   className,
   disabled,
-  ...props
+  onClick,
+  type = 'button'
 }) => {
   return (
     <motion.button
@@ -50,7 +56,8 @@ export const Button: React.FC<ButtonProps> = ({
         className
       )}
       disabled={disabled || loading}
-      {...props}
+      onClick={onClick}
+      type={type}
     >
       {loading && (
         <Loader2 className="w-4 h-4 mr-2 animate-spin" />

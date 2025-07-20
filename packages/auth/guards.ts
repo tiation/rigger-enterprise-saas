@@ -158,7 +158,7 @@ export class AuthGuard {
       return false;
     }
 
-    return userPermissions[resource].includes(action);
+    return (userPermissions[resource] as string[]).includes(action);
   }
 
   /**

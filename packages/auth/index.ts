@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@rigger/database';
 
 export interface AuthUser {
   id: string;
@@ -134,5 +134,4 @@ export class AuthService {
   }
 }
 
-export * from './middleware';
 export * from './guards';

@@ -51,16 +51,16 @@ router.get('/detailed', async (req, res) => {
     // Queue metrics
     const queueDetails = {
       jobMatching: {
-        waiting: await jobMatchingQueue.waiting(),
-        active: await jobMatchingQueue.active(),
-        completed: await jobMatchingQueue.completed(),
-        failed: await jobMatchingQueue.failed()
+        waiting: (await jobMatchingQueue.getWaiting()).length,
+        active: (await jobMatchingQueue.getActive()).length,
+        completed: (await jobMatchingQueue.getCompleted()).length,
+        failed: (await jobMatchingQueue.getFailed()).length
       },
       notifications: {
-        waiting: await notificationQueue.waiting(),
-        active: await notificationQueue.active(),
-        completed: await notificationQueue.completed(),
-        failed: await notificationQueue.failed()
+        waiting: (await notificationQueue.getWaiting()).length,
+        active: (await notificationQueue.getActive()).length,
+        completed: (await notificationQueue.getCompleted()).length,
+        failed: (await notificationQueue.getFailed()).length
       }
     };
 
